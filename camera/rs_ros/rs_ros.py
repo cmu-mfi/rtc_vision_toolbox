@@ -1,4 +1,3 @@
-import argparse
 import base64
 import math
 import struct
@@ -17,7 +16,7 @@ from igev_stereo import IGEVStereo
 from utils.utils import InputPadder
 
 
-class ZedRos:
+class RsRos:
     """
     This class represents a camera object for capturing RGB, depth and pointcloud data.
     """
@@ -38,7 +37,7 @@ class ZedRos:
     __ros_client    :roslibpy.Ros = None
     __camera_node   :str = None
     __depth_mode    :str = None
-    __camera_type   :str = None # 'zedx' or 'zedxm'
+    __camera_type   :str = None # 'd405'
 
     def __init__(self, camera_node: str, camera_type: str, rosmaster_ip='localhost', rosmaster_port=9090, depth_mode='igev'):
         """
@@ -76,7 +75,7 @@ class ZedRos:
         Returns:
             color_image (numpy.ndarray): RGB image captured from the camera.
         """
-        color_image = self.__get_image_from_rostopic('/rgb/image_rect_color')
+        color_image = self.__get_image_from_rostopic('/color/image_raw')
         color_image = np.array(color_image[:,:,0:3])
 
         return color_image
@@ -98,7 +97,7 @@ class ZedRos:
             method = self.__depth_mode
 
         if method == 'default':
-            depth_data = self.__get_image_from_rostopic('/depth/depth_registered')
+            depth_data = self.__get_image_from_rostopic('/depth/image_rect_raw')
             # convert to mm
             depth_data = depth_data.astype(np.float32) * 1000
 
@@ -179,7 +178,9 @@ class ZedRos:
 
         point_cloud = None
         if method == 'default':
-            point_cloud = self.__get_pointcloud_from_rostopic('/point_cloud/cloud_registered')
+            raise NotImplementedError('Default method not implemented yet.')
+            # TODO
+            # point_cloud = self.__get_pointcloud_from_rostopic('/point_cloud/cloud_registered')
 
         elif method == 'igev':
             point_cloud = self.__estimate_pcd_IGEV(min_mm, max_mm, use_new_frame)
@@ -202,7 +203,31 @@ class ZedRos:
             camera_matrix: Intrinsics of the camera as camera matrix.
         """
 
-        camera_info_sub = roslibpy.Topic(self.__ros_client, '/'+self.__camera_node + '/rgb/camera_info', 'sensor_msgs/CameraInfo')        
+        camera_info_sub = roslibpy.Topic(self.__ros_client, '/camera' + '/color/camera_info', 'sensor_msgs/CameraInfo')        
+
+        def callback(message):
+            nonlocal camera_matrix
+            camera_matrix = np.array(message['K']).reshape(3, 3)
+
+        camera_matrix :np.array = None
+        while camera_matrix is None:
+            camera_info_sub.subscribe(lambda message: callback(message))
+        camera_info_sub.unsubscribe()
+
+        return camera_matrix
+
+    def get_infra_intrinsics(self):
+        """
+        Returns the camera matrix.
+        #     [fx  0 cx]
+        # K = [ 0 fy cy]
+        #     [ 0  0  1]
+
+        Returns:
+            camera_matrix: Intrinsics of the camera as camera matrix.
+        """
+
+        camera_info_sub = roslibpy.Topic(self.__ros_client, '/camera' + '/infra1/camera_info', 'sensor_msgs/CameraInfo')        
 
         def callback(message):
             nonlocal camera_matrix
@@ -225,7 +250,7 @@ class ZedRos:
         Returns:
             camera_matrix: Intrinsics of the camera as camera matrix.
         """
-        camera_info_sub = roslibpy.Topic(self.__ros_client, '/'+self.__camera_node + '/depth/camera_info', 'sensor_msgs/CameraInfo')        
+        camera_info_sub = roslibpy.Topic(self.__ros_client, '/camera' + '/depth/camera_info', 'sensor_msgs/CameraInfo')        
 
         def callback(message):
             nonlocal camera_matrix
@@ -245,7 +270,28 @@ class ZedRos:
         Returns:
             distortion: Distortion coefficients of the camera.
         """
-        camera_info_sub = roslibpy.Topic(self.__ros_client, '/'+self.__camera_node + '/rgb/camera_info', 'sensor_msgs/CameraInfo')        
+        camera_info_sub = roslibpy.Topic(self.__ros_client, '/camera' + '/color/camera_info', 'sensor_msgs/CameraInfo')        
+
+        def callback(message):
+            nonlocal distortion
+            distortion = np.array(message['D'])
+
+        distortion :np.array = None
+        while distortion is None:
+            camera_info_sub.subscribe(lambda message: callback(message))        
+
+        camera_info_sub.unsubscribe()
+
+        return distortion
+    
+    def get_infra_distortion(self):
+        """
+        Returns the rgb camera distortion coefficients.
+
+        Returns:
+            distortion: Distortion coefficients of the camera.
+        """
+        camera_info_sub = roslibpy.Topic(self.__ros_client, '/camera' + '/infra1/camera_info', 'sensor_msgs/CameraInfo')        
 
         def callback(message):
             nonlocal distortion
@@ -266,7 +312,7 @@ class ZedRos:
         Returns:
             distortion: Distortion coefficients of the camera.
         """
-        camera_info_sub = roslibpy.Topic(self.__ros_client, '/'+self.__camera_node + '/depth/camera_info', 'sensor_msgs/CameraInfo')        
+        camera_info_sub = roslibpy.Topic(self.__ros_client, '/camera' + '/depth/camera_info', 'sensor_msgs/CameraInfo')        
 
         def callback(message):
             nonlocal distortion
@@ -311,8 +357,7 @@ class ZedRos:
             else:
                 raise TypeError(f'Unsupported encoding: {encoding}')
         time_stamp_1 = time.time()        
-        image_subscriber = roslibpy.Topic(self.__ros_client, '/'+self.__camera_node + topic_name, 'sensor_msgs/Image')        
-
+        image_subscriber = roslibpy.Topic(self.__ros_client, '/camera'+ topic_name, 'sensor_msgs/Image')        
         def callback(img_msg):
             nonlocal image
             img_msg['data'] = base64.b64decode(img_msg['data'])
@@ -372,7 +417,7 @@ class ZedRos:
 
         pcd_subscriber = roslibpy.Topic(
             self.__ros_client,
-            "/" + self.__camera_node + topic_name,
+            "/camera" + topic_name,
             "sensor_msgs/PointCloud2",
         )
 
@@ -532,12 +577,12 @@ class ZedRos:
         Estimate depth using IGEV generated disparity map.
         '''
         disparity = self.__estimate_disp_IGEV()
-        unified_matrix = self.get_rgb_intrinsics()
+        unified_matrix = self.get_infra_intrinsics()
         args = self.__get_default_IGEV_args()
         camera_seperation = args.camera_seperation
 
-        # camera intrinsics are for 1080p, so we need to scale them to the current image size
-        focal_length = unified_matrix[0][0] * disparity.shape[0] / 1080
+        # camera intrinsics are for 480p, so we need to scale them to the current image size
+        focal_length = unified_matrix[0][0] * disparity.shape[0] / 480
 
         depth = (camera_seperation * focal_length) / disparity
 
@@ -564,9 +609,9 @@ class ZedRos:
             image2 = right_image
             image2_np = np.array(image2[:,:,0:3])
 
-            # downsampel to 720p to speed up
-            image1_np = cv2.resize(image1_np,(1280,720))
-            image2_np = cv2.resize(image2_np,(1280,720))
+            # # downsampel to 720p to speed up
+            # image1_np = cv2.resize(image1_np,(1280,720))
+            # image2_np = cv2.resize(image2_np,(1280,720))
 
             # preprocess FOR igev
             image1= image1_np.astype(np.uint8)
@@ -620,12 +665,13 @@ class ZedRos:
         R = np.eye(3)
         T = np.array([-args.camera_seperation, 0, 0])
         
-        # camera intrinsics are for 1080p, so we need to scale them to the current image size        
-        cameraMatrix = self.get_rgb_intrinsics() * igev_disp.shape[0] / 1080
-        distCoeffs = self.get_rgb_distortion()
+        # camera intrinsics are for 480p, so we need to scale them to the current image size        
+        cameraMatrix = self.get_infra_intrinsics() * igev_disp.shape[0] / 480
+        distCoeffs = self.get_infra_distortion()
         R1, R2, P1, P2, Q, validPixROI1, validPixROI2 = cv2.stereoRectify(cameraMatrix, distCoeffs, 
                                                                           cameraMatrix, distCoeffs, 
                                                                           imageSize, R, T)
+
         with torch.no_grad():
             # rgb point cloud, reference : https://gist.github.com/lucasw/ea04dcd65bc944daea07612314d114bb
             disp = igev_disp
@@ -639,15 +685,16 @@ class ZedRos:
                     z = image_3d[i][j][2]*1000
                     pt = [x, y, z]
                     points.append(pt)
+            print("finished")   
 
             points = np.array(points)
             new_points = []
             for point in points:
                 if point[-1] < max_mm and point[-1] > min_mm:
                     new_points.append(point)
-                    
+            
             if len(new_points) == 0:
-                new_points = points
+                new_points = points        
             
             points = np.array(new_points)
             pcd = o3d.geometry.PointCloud()
@@ -659,14 +706,22 @@ class ZedRos:
         """
         Get stereo image from ROS topic.
         """
-        stereo_image = self.__get_image_from_rostopic('/stereo/image_rect_color')
-
         # GET RIGHT AND LEFT IMAGES
-        left_image = stereo_image[:, :int(stereo_image.shape[1]/2)]
-        right_image = stereo_image[:, int(stereo_image.shape[1]/2):]
+        left_image = self.__get_image_from_rostopic('/infra1/image_rect_raw')
+        right_image = self.__get_image_from_rostopic('/infra2/image_rect_raw')
+
+        # convert to 3 channel image
+        left_image = cv2.cvtColor(left_image, cv2.COLOR_GRAY2BGR)
+        right_image = cv2.cvtColor(right_image, cv2.COLOR_GRAY2BGR)
         
-        if stereo_image is None:
-            raise Exception('Stereo image not found. Please check the ROS topic name.')
+        if left_image is None or right_image is None:
+            raise Exception('Failed to get stereo images from ROS topics.')
+
+        # stereo_image = self.__get_image_from_rostopic('/stereo/image_rect_color')
+
+        # # GET RIGHT AND LEFT IMAGES
+        # left_image = stereo_image[:, :int(stereo_image.shape[1]/2)]
+        # right_image = stereo_image[:, int(stereo_image.shape[1]/2):]
 
         return left_image, right_image
 
@@ -728,16 +783,10 @@ class ZedRos:
             slow_fast_gru = False
             n_gru_layers = 3
             max_disp = 192
-            left_topic = "/zedB/zed_node_B/left/image_rect_color"
-            right_topic = "/zedB/zed_node_B/right/image_rect_color"
-            depth_topic = "/zedB/zed_node_B/depth/depth_registered"
-            conf_map_topic = "/zedB/zed_node_B/confidence/confidence_map"
             downsampling = False
             camera_seperation = 0.12
             
-        if self.__camera_type == 'zedxm':
-            args.camera_seperation = 0.050
-        elif self.__camera_type == 'zedx':
-            args.camera_seperation = 0.12
+        if self.__camera_type == 'd405':
+            args.camera_seperation = 0.018
 
         return args

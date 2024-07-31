@@ -1,16 +1,17 @@
 import cv2
 import numpy as np
 
-from camera.zed_ros.zed_ros import ZedRos
+from camera.rs_ros.rs_ros import RsRos
 
 
-# TEST1: GET RGB/DEPTH INTRINSICS. WORKS OK ✓
+# TEST1: GET RGB/DEPTH/INFRA INTRINSICS. WORKS OK ✓
 def test1(camera):
     rgb_intrinsics = camera.get_rgb_intrinsics()
     depth_intrinsics = camera.get_depth_intrinsics()
+    infrared_intrinsics = camera.get_infra_intrinsics()
     print("RGB intrinsics: \n", rgb_intrinsics)
     print("Depth intrinsics: \n", depth_intrinsics)
-
+    print("Infrared intrinsics: \n", infrared_intrinsics)
 
 # TEST2: GET RGB IMAGE. WORKS OK ✓
 def test2(camera):
@@ -71,19 +72,12 @@ def test6(camera):
 
 if __name__ == "__main__":
 
-    print("Testing ZedRos class")
+    print("Testing Realsense ROS class")
 
-    cam_id = input("Enter camera id (0/1/2): ")
-    cam_id = int(cam_id)
-    if cam_id == 2:
-        camera = ZedRos(
-            camera_node=f"/cam{cam_id}/zed_cam{cam_id}", camera_type="zedxm"
-        )
-    else:
-        camera = ZedRos(camera_node=f"/cam{cam_id}/zed_cam{cam_id}", camera_type="zedx")
+    camera = RsRos(camera_node=f"/camera/realsense2_camera", camera_type="d405")
 
     print("Available tests: ")
-    print("1. Get RGB/DEPTH intrinsics")
+    print("1. Get RGB/DEPTH/INFRA intrinsics")
     print("2. Get RGB image")
     print("3. Get default depth image")
     print("4. Get default point cloud")
