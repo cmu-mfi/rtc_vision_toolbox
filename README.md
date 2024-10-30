@@ -18,7 +18,6 @@ git clone --recursive https://github.com/cmu-mfi/rtc_vision_toolbox.git
 
 * `scripts` contains scripts to train and test the vision system. Use the scripts as is or modify them to suit your needs.
 
-
 ## Installation Steps
 
 1. **Step 1: Device Interfaces**:
