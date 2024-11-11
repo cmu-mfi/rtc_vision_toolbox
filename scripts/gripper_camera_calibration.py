@@ -44,7 +44,6 @@ def robot_camera_calibration():
     T_base2marker = np.dot(T_base2scene_camera, T_scene_camera2marker)
 
     print(f"T_base2marker:\n {T_base2marker}")
-    breakpoint()
 
     print("=====================================")
     print("MARKER IDENTIFIED")

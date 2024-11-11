@@ -230,15 +230,15 @@ class TeachPlace:
             print(f"Moving to placement pose...")
             self.devices.robot_move_to_pose(pre_placement_pose)
 
-            is_good = input("Looks good? Press 'n' to place manually (y/n): ")
+            is_good = input("Is the gripper centered? Press 'n' to place manually (y/n): ")
             if is_good == "n":
-                input("Move robot to placement pose and press Enter to continue...")
+                input("Jog robot to placement pose and press Enter to continue...")
                 self.current_demo -= 1
             elif is_good == "y":
                 self.devices.robot_move_to_pose(placement_pose)
             else:
                 print("Invalid input. Assuming 'n'...")
-                input("Move robot to placement pose and press Enter to continue...")
+                input("Jog robot to placement pose and press Enter to continue...")
             
             self.collect_data("placement")
             
