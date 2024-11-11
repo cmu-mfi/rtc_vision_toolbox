@@ -492,7 +492,7 @@ class ExecutePlace:
         pcd, _ = pcd.remove_statistical_outlier(nb_neighbors=20, std_ratio=1.0)
         return pcd
 
-    def validate_execute(self) -> None:
+    def validate_execute(self, eef_pose = None) -> None:
 
         print(f"EXECUTING PLACE FOR {self.object.upper()}")
 
@@ -513,9 +513,11 @@ class ExecutePlace:
         
         self.devices.robot_move_to_pose(self.poses['target_pose'], 1, 1)
 
-
-        input("Press Enter to close gripper when object inside gripper...")
-
+        if eef_pose is None:
+            input("Press Enter to close gripper when object inside gripper...")
+        else:
+            self.devices.robot_move_to_pose(eef_pose, 1, 1)
+            
         self.devices.gripper_close()
         time.sleep(0.5)
         
@@ -563,16 +565,6 @@ class ExecutePlace:
             
             print(f"Moving to in-hand camera view pose...")
             self.devices.robot_move_to_pose(self.poses['ih_camera_view_pose'], 1, 1)
-            condition = input("VARIABLE ANCHOR POSE? (y/n) ")
-            if (condition == 'y'):
-                # breakpoint()
-                T_eef2camera = np.load(os.path.join(self.project_dir, 'data/demonstrations/09-11-wp/calib_data/T_eef2cam3_new.npy'))
-                T_eef2camera[2,3] = 0
-                ih_camera_view_pose = self.devices.robot_get_eef_pose()
-                pre_target_pose = ih_camera_view_pose @ T_eef2camera
-                self.poses['target_pose'] = np.copy(pre_target_pose)
-                self.poses['target_pose'][2, 3] = pre_target_pose[2, 3] - 0.04
-                # breakpoint()            
             
             self.collect_data("ih_camera_view")
             # breakpoint()
@@ -598,7 +590,7 @@ class ExecutePlace:
             pre_target_pose[2, 3] = self.poses['home_pose'][2, 3]
             self.devices.robot_move_to_pose(pre_target_pose, 1, 1)
             
-            input("Press Enter to continue...")
+            # input("Press Enter to continue...")
             
             self.devices.robot_move_to_pose(pre_placement_pose)
                         
@@ -609,16 +601,16 @@ class ExecutePlace:
             t_error2 = np.linalg.norm(ground_truth[:2,3] - placement_pose[:2,3])*1000
             print(f"\nRotation error: {rot_error}\u00B0,\tTranslation error: {np.round(t_error,2)}, {np.round(t_error2,2)} mm\n")
             
-            retry_input = input("Press 'r' to retry or Enter to continue...")
-            retry = retry_input == 'r'
-            if retry:
-                retry_ctr += 1
-                self.save_dir = self.save_dir + "_r" + str(retry_ctr)
-                if not os.path.exists(self.save_dir):
-                    os.makedirs(self.save_dir)
-                    print(f"Save directory: {self.save_dir}")
-            
-        
+            retry = False
+            # retry_input = input("Press 'r' to retry or Enter to continue...")
+            # retry = retry_input == 'r'
+            # if retry:
+            #     retry_ctr += 1
+            #     self.save_dir = self.save_dir + "_r" + str(retry_ctr)
+            #     if not os.path.exists(self.save_dir):
+            #         os.makedirs(self.save_dir)
+            #         print(f"Save directory: {self.save_dir}")
+                  
         self.devices.robot_move_to_pose(placement_pose, 0.05, 0.05)
         
         print("####################################################################")
@@ -629,7 +621,56 @@ class ExecutePlace:
         time.sleep(0.5)
         self.devices.robot_move_to_pose(self.poses['home_pose'])
 
+        # create and write results to success.txt file
+        success = input("Was the placement successful? (y/n) ")
+        with open(os.path.join(self.save_dir, "success.log"), "w") as f:
+            f.write(f"{success}\n")    
+        if success == 'n':
+            input("Reset and preses Enter to continue...")
+        
         print(f"\033[1m\033[3m{self.object.upper()} PLACEMENT DONE!\033[0m")
+
+    def validate_execute_repeat(self) -> None:
+        
+        count = int(input("Enter number of repetitions: "))  
+        Ry_range = float(input("Enter rotational variance (+-deg): "))
+        x_range = float(input("Enter x variance (+-mm): "))
+        z_range = float(input("Enter z variance (+-mm): "))    
+        
+        T_ee2target = [[1, 0, 0, 0],
+                       [0, 1, 0, 0],
+                       [0, 0, 1, 0.212],
+                       [0, 0, 0, 1]]           
+        
+        for i in range(count):
+            print("####################################################################")
+            print(f"REPEAT {i+1}")
+            print("####################################################################")
+                       
+            # add random Ry (+- 10deg), x(+- 5mm), z(+- 10mm)
+            Ry = np.random.uniform(-Ry_range, Ry_range)
+            x = np.random.uniform(-x_range, x_range)/1000
+            z = np.random.uniform(0, z_range)/1000
+            
+            gripper_pose = np.dot(self.poses['target_pose'], T_ee2target)
+            rot = R.from_matrix(gripper_pose[:3,:3]).as_euler('xyz', degrees=True)
+            rot[1] = rot[1] + Ry
+            gripper_pose[:3,:3] = R.from_euler('xyz', rot, degrees=True).as_matrix()          
+            eef_pose = gripper_pose @ np.linalg.inv(T_ee2target)
+            eef_pose[2, 3] = eef_pose[2, 3] + z
+            eef_pose[0, 3] = eef_pose[0, 3] + x
+            
+            print(f"Executing with random Ry: {np.round(Ry,2)}\u00B0, x: {np.round(x*1000,2)} mm, z: {np.round(z*1000,2)} mm")
+            
+            self.validate_execute(eef_pose = eef_pose)
+            
+            now = datetime.datetime.now().strftime("%m%d_%H%M")
+            self.save_dir = os.path.join(self.data_dir, f"execute_data/{now}")
+
+            if not os.path.exists(self.save_dir):
+                os.makedirs(self.save_dir)
+                print(f"Save directory: {self.save_dir}")            
+            
         
     def loop_execute(self) -> None:
         while True:
