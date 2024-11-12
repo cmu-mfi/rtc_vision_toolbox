@@ -202,7 +202,7 @@ class ExecutePlace:
 
     def infer_placement_pose(self) -> np.ndarray:
         
-        T_ee2target = np.asarray(self.devices.gripper.T_ee2gripper)
+        T_ee2target = np.asarray(self.cfg.devices.gripper.T_ee2gripper)
 
         # PREPARE DATA FOR INFERENCE: ACTION POINTCLOUD
         action_pcd = self.predict_placement_pose_data['action']['pcd']
@@ -540,8 +540,12 @@ class ExecutePlace:
             T_base2camera = self.cam_setup[self.cfg.training.action.camera]["T_base2cam"]
 
             distance = self.cfg.execution.action.viewing_distance
-            T_camera2gripper = np.asarray(self.cfg.devices.gripper.T_camera2gripper)
-            T_eef2gripper = np.asarray(self.devices.gripper.T_ee2gripper)
+            T_camera2gripper = np.array([
+                [1,  0,  0, 0],
+                [0, -1,  0, 0],
+                [0,  0, -1, distance],
+                [0,  0,  0, 1]])
+            T_eef2gripper = np.asarray(self.cfg.devices.gripper.T_ee2gripper)
             T_base2gripper = (T_base2camera @ T_camera2gripper) @ np.linalg.inv(T_eef2gripper)
             gripper_close_up_pose = T_base2gripper
 
