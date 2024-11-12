@@ -42,11 +42,11 @@ devices:
     class: RobotiqGripper
     init_args:
       port: /dev/ttyUSB0
-      T_ee2gripper: 
-        - [1, 0, 0, 0.0]
-        - [0, 1, 0, 0.0]
-        - [0, 0, 1, 0.212]
-        - [0, 0, 0, 1.0]
+    T_ee2gripper: 
+      - [1, 0, 0, 0.0]
+      - [0, 1, 0, 0.0]
+      - [0, 0, 1, 0.212]
+      - [0, 0, 0, 1.0]
 
 training:
   num_demos: ${num_demos}
