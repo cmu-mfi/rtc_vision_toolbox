@@ -382,10 +382,7 @@ class LearnPlace:
             
             # target pose
             T_base2targeteef = np.load(os.path.join(teach_pose_dir, f"demo0_placement_pose.npy"))
-            T_ee2target = [[1, 0, 0, 0],
-                           [0, 1, 0, 0],
-                           [0, 0, 1, 0.212],
-                           [0, 0, 0, 1]]        
+            T_ee2target = np.asarray(self.cfg.devices.gripper.T_ee2target)
             T_base2target = np.dot(T_base2targeteef, T_ee2target)
             
             T_base2placeeef = np.load(os.path.join(teach_pose_dir, f"demo{demo}_placement_pose.npy"))
