@@ -1,7 +1,10 @@
 import cv2
 import numpy as np
 
-from camera.camera_ros.camera_ros import CameraRos
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../..')))
+from rtc_vision_toolbox.camera.azure_pyk4a.azure_pyk4a import CameraPyk4a
 
 # TEST1: GET RGB/DEPTH INTRINSICS.
 def test1(camera):
@@ -44,20 +47,25 @@ def test4(camera):
     print("Point cloud shape: ", np.asarray(point_cloud.points).shape)
 
 
+# TEST5: VISUALIZE POINT CLOUD
+def test5(camera):
+    print("Visualizing point cloud")
+    camera.visualize_point_cloud()
+
+
 if __name__ == "__main__":
 
-    print("Testing ZedRos class")
-
-    camera_namespace = input("Enter camera namespace: ")
+    print("Testing CameraPyk4a class")
     
-    camera = CameraRos(camera_namespace=camera_namespace)
+    camera = CameraPyk4a()
 
     print("Available tests: ")
     print("1. Get RGB/DEPTH intrinsics")
     print("2. Get RGB image")
     print("3. Get default depth image")
     print("4. Get default point cloud")
-    test = input("Enter test number (1-4): ")
+    print("5. Visualize point cloud")
+    test = input("Enter test number (1-5): ")
 
     match test:
         case "1":
@@ -68,5 +76,8 @@ if __name__ == "__main__":
             test3(camera)
         case "4":
             test4(camera)
+        case "5":
+            test5(camera)
         case _:
             print("Invalid test number")
+    camera.close()
