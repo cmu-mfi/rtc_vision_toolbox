@@ -1,14 +1,13 @@
 import argparse
 from calibration.calibrations import *
 from calibration.marker.aruco_marker import ArucoMarker
-from camera.orbbec.ob_camera import OBCamera
-from camera.zed_ros.zed_ros import ZedRos
-from robot.ros_robot.ros_robot import ROSRobot
+from camera.azure_pyk4a.azure_pyk4a import CameraPyk4a
+from robot.frankapy_robot.frankapy_robot import FrankapyRobot
 
 
 def robot_camera_calibration():
 
-    camera = ZedRos(camera_node=f'/cam2/zed_cam2', camera_type='zedxm', rosmaster_ip='localhost')
+    camera = CameraPyk4a()
 
     print("=====================================")
     print("CAMERA INITIALIZED")
@@ -20,17 +19,25 @@ def robot_camera_calibration():
     print("MARKER INITIALIZED")
     print("=====================================")
 
-    robot = ROSRobot(robot_name='yk_builder', rosmaster_ip='172.26.179.142')
+    robot = FrankapyRobot(robot_name='yk_builder', rosmaster_ip='172.26.179.142')
 
     print("=====================================")
     print("ROBOT INITIALIZED")
     print("=====================================")
 
+    # T_eef2marker = np.array(
+    #     [
+    #         [0.0, 0.0, 1.0, 0.041502],
+    #         [-1.0, 0.0, 0.0, 0.0],
+    #         [0.0, -1.0, 0.0, 0.080824],
+    #         [0.0, 0.0, 0.0, 1.0],
+    #     ]
+    # )
     T_eef2marker = np.array(
         [
-            [0.0, 0.0, 1.0, 0.041502],
-            [-1.0, 0.0, 0.0, 0.0],
-            [0.0, -1.0, 0.0, 0.080824],
+            [1.0, 0.0, 0.0, 0.048914],
+            [0.0, 1.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0, -0.03503],
             [0.0, 0.0, 0.0, 1.0],
         ]
     )
