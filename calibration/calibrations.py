@@ -209,11 +209,11 @@ def solve_rigid_transformation(T_base2target_set, T_camera2target_set, method="O
         T_base2camera = T_base2camera_set[min_error_index]
         return T_base2camera
     
-    elif method == "CALIB_HAND_EYE_TSAI":
+    elif method ==  "CALIB_HAND_EYE_TSAI":
         T_target2base_set = [np.linalg.inv(T) for T in T_base2target_set]
         R_target2base = [T[:3,:3] for T in T_target2base_set]
         t_target2base = [T[:3,3] for T in T_target2base_set]
-
+        
         R_camera2target = [T[:3,:3] for T in T_camera2target_set]
         t_camera2target = [T[:3,3] for T in T_camera2target_set]
         R_camera2base, t_base2camera = cv2.calibrateHandEye(R_target2base, t_target2base, 
