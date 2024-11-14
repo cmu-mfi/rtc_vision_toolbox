@@ -67,17 +67,16 @@ if __name__ == "__main__":
     print("5. Visualize point cloud")
     test = input("Enter test number (1-5): ")
 
-    match test:
-        case "1":
-            test1(camera)
-        case "2":
-            test2(camera)
-        case "3":
-            test3(camera)
-        case "4":
-            test4(camera)
-        case "5":
-            test5(camera)
-        case _:
-            print("Invalid test number")
+    if test == "1":
+        test1(camera)
+    elif test == "2":
+        test2(camera)
+    elif test == "3":
+        test3(camera)
+    elif test == "4":
+        test4(camera)
+    elif test == "5":
+        test5(camera)
+    else:
+        print("Invalid test number")
     camera.close()

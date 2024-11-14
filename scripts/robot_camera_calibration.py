@@ -6,6 +6,7 @@ from robot.frankapy_robot.frankapy_robot import FrankapyRobot
 
 def robot_camera_calibration():
 
+    # camera = ZedRos(camera_node=f'/cam2/zed_cam2', camera_type='zedxm', rosmaster_ip='localhost')
     camera = CameraPyk4a()
 
     print("=====================================")
@@ -19,7 +20,7 @@ def robot_camera_calibration():
     print("MARKER INITIALIZED")
     print("=====================================")
 
-    # robot = FrankapyRobot(robot_name='yk_builder', rosmaster_ip='172.26.179.142')
+    # robot = ROSRobot(robot_name='yk_builder', rosmaster_ip='172.26.179.142')
     robot = FrankapyRobot()
 
     print("=====================================")
