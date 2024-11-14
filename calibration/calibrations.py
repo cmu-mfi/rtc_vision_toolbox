@@ -161,7 +161,7 @@ def solve_rigid_transformation(T_base2target_set, T_camera2target_set, method="O
         tranforms a point from frame 'b' to frame 'a'
     """
     
-    
+
     if method == "SVD_ALGEBRAIC":   
         t_camera2target = np.array([T[:3,3] for T in T_camera2target_set])
         t_base2target = np.array([T[:3,3] for T in T_base2target_set])
@@ -213,7 +213,7 @@ def solve_rigid_transformation(T_base2target_set, T_camera2target_set, method="O
         T_target2base_set = [np.linalg.inv(T) for T in T_base2target_set]
         R_target2base = [T[:3,:3] for T in T_target2base_set]
         t_target2base = [T[:3,3] for T in T_target2base_set]
-        
+
         R_camera2target = [T[:3,:3] for T in T_camera2target_set]
         t_camera2target = [T[:3,3] for T in T_camera2target_set]
         R_camera2base, t_base2camera = cv2.calibrateHandEye(R_target2base, t_target2base, 
