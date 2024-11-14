@@ -161,6 +161,7 @@ def solve_rigid_transformation(T_base2target_set, T_camera2target_set, method="O
         tranforms a point from frame 'b' to frame 'a'
     """
     
+    
     if method == "SVD_ALGEBRAIC":   
         t_camera2target = np.array([T[:3,3] for T in T_camera2target_set])
         t_base2target = np.array([T[:3,3] for T in T_base2target_set])
