@@ -10,3 +10,4 @@
     2. **Get RGB image**: Capture and return an RGB image from the camera using Pyk4a.
     3. **Get default depth image**: Capture and return a depth image from the camera using Pyk4a.
     4. **Get default point cloud**: Generate and return a point cloud from the depth data using Pyk4a.
+    5. **Visualize point cloud**: Capture and visualize a point cloud using Pyk4a.
