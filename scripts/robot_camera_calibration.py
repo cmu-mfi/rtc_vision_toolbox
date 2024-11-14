@@ -1,6 +1,6 @@
 from calibration.calibrations import *
 from calibration.marker.aruco_marker import ArucoMarker
-from camera.azure_pyk4a.azure_pyk4a import CameraPyk4a
+from camera.camera_pyk4a.camera_pyk4a import CameraPyk4a
 from robot.frankapy_robot.frankapy_robot import FrankapyRobot
 
 

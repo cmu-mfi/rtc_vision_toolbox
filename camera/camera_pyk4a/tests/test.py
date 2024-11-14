@@ -4,7 +4,7 @@ import numpy as np
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../..')))
-from rtc_vision_toolbox.camera.azure_pyk4a.azure_pyk4a import CameraPyk4a
+from rtc_vision_toolbox.camera.camera_pyk4a.camera_pyk4a import CameraPyk4a
 
 # TEST1: GET RGB/DEPTH INTRINSICS.
 def test1(camera):
