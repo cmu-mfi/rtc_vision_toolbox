@@ -1,9 +1,8 @@
-import cv2
 import numpy as np
-import roslibpy
 from scipy.spatial.transform import Rotation as R
+from robot.frankapy_robot.frankapy_robot import FrankapyRobot
 
-from robot.ros_template.ros_robot import ROSRobot
+# Running: python -m robot.frankapy_robot.tests.test # from the root directory
 
 # TEST1: GET EEF POSE.
 def test1(robot):
@@ -25,20 +24,18 @@ def test2(robot):
     
 if __name__ == "__main__":
 
-    print("Testing ROS Robot class")
+    print("Testing Frankapy Robot class")
 
-    robot_namespace = input("Enter robot namepace: ")
-    robot = ROSRobot(robot_namespace=robot_namespace)
+    robot = FrankapyRobot()
 
     print("Available tests: ")
     print("1. Get end effector pose")
     print("2. Move to pose")
     test = input("Enter test number (1-2): ")
 
-    match test:
-        case "1":
-            test1(robot)
-        case "2":
-            test2(robot)
-        case _:
-            print("Invalid test number")
+    if test == "1":
+        test1(robot)
+    elif test == "2":
+        test2(robot)
+    else:
+        print("Invalid test number")

@@ -1,4 +1,3 @@
-import argparse
 from calibration.calibrations import *
 from calibration.marker.aruco_marker import ArucoMarker
 from camera.azure_pyk4a.azure_pyk4a import CameraPyk4a
@@ -13,13 +12,15 @@ def robot_camera_calibration():
     print("CAMERA INITIALIZED")
     print("=====================================")
 
-    marker = ArucoMarker(type='DICT_4X4_100', size=0.05)
+    # marker = ArucoMarker(type='DICT_4X4_100', size=0.05)
+    marker = ArucoMarker(type='DICT_ARUCO_ORIGINAL', size=0.048, debug=True)
 
     print("=====================================")
     print("MARKER INITIALIZED")
     print("=====================================")
 
-    robot = FrankapyRobot(robot_name='yk_builder', rosmaster_ip='172.26.179.142')
+    # robot = FrankapyRobot(robot_name='yk_builder', rosmaster_ip='172.26.179.142')
+    robot = FrankapyRobot()
 
     print("=====================================")
     print("ROBOT INITIALIZED")
