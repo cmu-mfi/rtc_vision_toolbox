@@ -3,8 +3,9 @@ import numpy as np
 
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../..')))
-from rtc_vision_toolbox.camera.camera_pyk4a.camera_pyk4a import CameraPyk4a
+from camera.camera_pyk4a.camera_pyk4a import CameraPyk4a
+
+# Running: python -m camera.camera_pyk4a.tests.test # from the root directory
 
 # TEST1: GET RGB/DEPTH INTRINSICS.
 def test1(camera):
