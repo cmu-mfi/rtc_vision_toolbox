@@ -3,9 +3,9 @@ import numpy as np
 
 import sys
 import os
-from camera.camera_pyk4a.camera_pyk4a import CameraPyk4a
+from camera.kinect.kinect import KinectCamera
 
-# Running: python -m camera.camera_pyk4a.tests.test # from the root directory
+# Running: python -m camera.kinect.tests.test # from the root directory
 
 # TEST1: GET RGB/DEPTH INTRINSICS.
 def test1(camera):
@@ -56,9 +56,9 @@ def test5(camera):
 
 if __name__ == "__main__":
 
-    print("Testing CameraPyk4a class")
+    print("Testing KinectCamera class")
     
-    camera = CameraPyk4a()
+    camera = KinectCamera()
 
     print("Available tests: ")
     print("1. Get RGB/DEPTH intrinsics")

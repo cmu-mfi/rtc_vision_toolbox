@@ -9,7 +9,7 @@ import open3d as o3d
 from pyk4a import PyK4A
 from pyk4a.calibration import CalibrationType
 
-class CameraPyk4a:
+class KinectCamera:
     """
     This class represents a camera object for capturing RGB, depth and pointcloud data.
     """
@@ -22,6 +22,14 @@ class CameraPyk4a:
         self.k4a.start()
         if self.debug:
             print("Started Azure Kinect camera with device ID: ", device_id)
+
+    def __del__(self):
+        """
+        Deinitializes the Camera object.
+        """
+        self.k4a.stop()
+        if self.debug:
+            print("Stopped Azure Kinect camera")
 
     def get_rgb_image(self, use_new_frame: bool=True) -> Union[Optional[np.array], Any]:
         """
@@ -178,9 +186,10 @@ class CameraPyk4a:
             front=-pointcloud.get_center(),
             zoom=1
         )
-    
+
     def close(self):
         """
         Stops the camera.
         """
         self.k4a.stop()
+        

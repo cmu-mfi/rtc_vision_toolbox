@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-from robot.frankapy_robot.frankapy_robot import FrankapyRobot
+from robot.frankapy_robot.frankapy_robot import FrankaRobot
 
 # Running: python -m robot.frankapy_robot.tests.test # from the root directory
 
@@ -26,7 +26,7 @@ if __name__ == "__main__":
 
     print("Testing Frankapy Robot class")
 
-    robot = FrankapyRobot()
+    robot = FrankaRobot()
 
     print("Available tests: ")
     print("1. Get end effector pose")

@@ -8,7 +8,7 @@ import math
 PI = np.pi
 EPS = np.finfo(float).eps * 4.0
 
-class FrankapyRobot:
+class FrankaRobot:
     def __init__(self):
         self.fa = FrankaArm()
 
