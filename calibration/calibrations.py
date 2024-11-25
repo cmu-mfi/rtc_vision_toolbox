@@ -9,6 +9,8 @@ import time
 
 MIN_TRIALS = 3
 MAX_TRIALS = 50
+POSITION_VARIANCE = 0.05 # in meters
+ROTATION_VARIANCE = 30 # in degrees
 
 def get_camera_marker_tf(camera, marker):
     
@@ -312,9 +314,10 @@ def collect_data(camera, robot, marker, method='JOG', num_trials=None, verbose=T
                         
             # 2.1. Move the robot and collect data
             if method == 'PLAY':
-                random_delta_pos = np.random.uniform(-0.05, 0.05, size=(3,))
-                # random_delta_quart = np.random.uniform(-0.3, 0.3, size=(4,))
-                random_delta_quart = np.random.uniform(-0.2, 0.2, size=(4,))                    
+                random_delta_pos = np.random.uniform(-POSITION_VARIANCE, POSITION_VARIANCE, size=(3,))
+                random_delta_euler = np.random.uniform(-ROTATION_VARIANCE, ROTATION_VARIANCE, size=(3,))
+                random_delta_quart = R.from_euler('xyz', random_delta_euler, degrees=True).as_quat()
+                # random_delta_quart = np.random.uniform(-0.2, 0.2, size=(4,))                    
                 robot_pose = robot.move_to_pose(position = home_pos + random_delta_pos, 
                                                 orientation = home_quart + random_delta_quart)      
             if robot_pose is not None:
