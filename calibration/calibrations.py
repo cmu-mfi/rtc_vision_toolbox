@@ -109,6 +109,8 @@ def get_robot_camera_tf(camera, robot, marker, T_eef2marker, method='JOG', num_t
     now = datetime.now().strftime("%Y%m%d%H%M")
     np.save("T_base2camera_"+ now +".npy", T_base2camera)
     
+    print("Note: T_a2b represents frame 'b' in frame 'a', or transforms a point from frame 'b' to frame 'a'")
+    
     return T_base2camera
     
 def calculate_reprojection_error(T_a2t_set, T_b2t_set, T_a2b):
