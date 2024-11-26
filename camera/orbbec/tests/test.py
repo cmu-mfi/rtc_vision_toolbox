@@ -68,12 +68,12 @@ if __name__ == "__main__":
     print("Testing OBCamera class")
     
     args = parse_args()
-    
-    if args.serial_no in cam_sn:
-        serial_no = cam_sn[args.serial_no]
-    else:    
+
+    if args.serial_no is None:
         print("Suggestion: Use --serial_no option to specify camera serial no")
         serial_no = input("Enter camera serial no: ")
+    else:
+        serial_no = args.serial_no
 
     camera = OBCamera(serial_no=serial_no)
     
@@ -87,18 +87,18 @@ if __name__ == "__main__":
         print("3. Get depth image")
         print("4. Get point cloud")
         print("5. Run all tests")
-        test = input("Enter test number (1-6): ")
+        test = int(input("Enter test number (1-6): "))
     
     match test:
-        case '1':
+        case 1:
             test1(camera)
-        case '2':
+        case 2:
             test2(camera)
-        case '3':
+        case 3:
             test3(camera)
-        case '4':
+        case 4:
             test4(camera)
-        case '5':
+        case 5:
             test5(camera)
         case _:
             print("Invalid test number")
