@@ -144,7 +144,7 @@ class TeachPlace:
                 print("Using new in-hand camera view pose")       
             
             self.devices.robot_move_to_pose(ih_camera_view_pose)
-            self.collect_data("ih_camera_view0")
+            # self.collect_data("ih_camera_view0")
             
             current_pose = ih_camera_view_pose
             if "view_variations" in self.config.training.anchor.keys():
@@ -182,16 +182,21 @@ class TeachPlace:
             print(f"Moving to object in hand close up pose...")
             T_base2camera = self.cam_setup[self.config.training.action.camera]["T_base2cam"]
 
-            distance = self.cfg.execution.action.viewing_distance
-            T_camera2gripper = np.asarray(self.cfg.devices.gripper.T_camera2gripper)
-            T_eef2gripper = np.asarray(self.devices.gripper.T_ee2gripper)
+            distance = self.config.training.action.viewing_distance
+            T_camera2gripper = np.array([
+                [1,  0,  0, 0],
+                [0, -1,  0, 0],
+                [0,  0, -1, distance],
+                [0,  0,  0, 1]])
+            T_eef2gripper = np.asarray(self.config.devices.gripper.T_ee2gripper)
             T_base2gripper = (T_base2camera @ T_camera2gripper) @ np.linalg.inv(T_eef2gripper)
             gripper_close_up_pose = T_base2gripper
 
             self.devices.robot_move_to_pose(gripper_close_up_pose)
+            breakpoint()
             self.collect_data("gripper_close_up_view0")
             # breakpoint()
-            current_pose = T_camera2gripper
+            current_pose = T_base2gripper
             if "view_variations" in self.config.training.action.keys():
                 cfg = self.config.training.action.view_variations
                 for i in range(cfg['count'] - 1):
