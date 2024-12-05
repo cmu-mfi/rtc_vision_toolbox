@@ -42,28 +42,6 @@ services:
     command: bash -c "source /catkin_ws/devel/setup.bash && roslaunch realsense2_camera rs_aligned_depth.launch"
     tty: true
 
-  fts:
-    build:
-        context: ./ati-fts
-        dockerfile: Dockerfile
-    depends_on:
-      roscore:
-        condition: service_healthy
-    image: fts:latest
-    container_name: fts-container
-    stdin_open: true
-    tty: true
-    network_mode: "host"
-    environment:
-      - ROS_MASTER_URI=http://192.168.1.1:11311
-      - ROS_IP=192.168.1.1
-      - DISPLAY
-    volumes:
-      - "/tmp/.X11-unix:/tmp/.X11-unix"
-      - "/dev/*:/dev/*"
-    command: >
-      bash -c "python3 ros_fts.py"
-
   roscore:
     image: ros:noetic-ros-core
     container_name: roscore
